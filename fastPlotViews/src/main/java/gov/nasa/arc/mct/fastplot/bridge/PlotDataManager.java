@@ -124,7 +124,7 @@ public class PlotDataManager {
 	 * plot window is resized.
 	 */
 	private void setupResizeTimmer() {
-		resizeTimmer = new Timer(PlotConstants.RESIZE_TIMMER, new ActionListener() {
+		resizeTimmer = new Timer(PlotConstants.RESIZE_TIMER, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				resizeAndReloadPlotBuffer();
 			}
@@ -139,10 +139,12 @@ public class PlotDataManager {
 		if (dataSeries.size() == 0) {
 			setupBufferSizeAndCompressionRatio();
 		}
+		LegendEntry legendEntry = new LegendEntry(PlotConstants.LEGEND_BACKGROUND_COLOR, plottingColor, plot.timeAxisFont, plot.plotLabelingAlgorithm);
 		dataSeries.put(dataSetName, new PlotDataSeries(plot, dataSetName, plottingColor));	
 		// create the legend.
-		LegendEntry legendEntry = new LegendEntry(PlotConstants.LEGEND_BACKGROUND_COLOR, plottingColor, plot.timeAxisFont, plot.plotLabelingAlgorithm);
+
 		legendEntry.setPlot(dataSeries.get(dataSetName).getPlot());
+		legendEntry.setRegressionLine(dataSeries.get(dataSetName).getRegressionLine());
 		dataSeries.get(dataSetName).setLegend(legendEntry);	
 		}
 	}
@@ -211,6 +213,7 @@ public class PlotDataManager {
 					}
 				}
 				points = points2;
+				dataSeries.get(feed).setUpdateRegressionLine(false);
 			}
 		}
 
@@ -236,11 +239,15 @@ public class PlotDataManager {
 			if(plot.axisOrientation == AxisOrientationSetting.X_AXIS_AS_TIME) {
 				for(Entry<Long, Double> point : points.entrySet()) {
 					dataset.add(point.getKey(), point.getValue());
+
 				}
 			} else {
 				for(Entry<Long, Double> point : points.entrySet()) {
 					dataset.add(point.getValue(), point.getKey());
 				}
+			} 
+			if (plot.getCurrentTimeAxisMaxAsLong() >= datasetMaxTime) {
+				dataSeries.get(feed).setUpdateRegressionLine(true);
 			}
 		} else if(points.lastKey() <= datasetMinTime) {
 			// TODO: Make this efficient
@@ -309,7 +316,7 @@ public class PlotDataManager {
  				}
  			}
 		}
-
+		dataSeries.get(feed).updateRegressionLine();
 		for(Entry<Long, Double> point : points.entrySet()) {
 			Long timestamp = point.getKey();
 			Double value = point.getValue();
@@ -396,7 +403,7 @@ public class PlotDataManager {
 						scale *= 2;
 					}
 				}
-				if(scale != d.getCompressionScale()) {
+				if(scale > d.getCompressionScale()) {
 					d.setCompressionOffset(start);
 					d.setCompressionScale(scale);
 					d.recompress();
