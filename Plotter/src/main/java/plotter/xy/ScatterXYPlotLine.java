@@ -28,6 +28,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+
 import plotter.DoubleData;
 import plotter.DoubleDataDouble;
 
@@ -242,14 +244,12 @@ public class ScatterXYPlotLine extends XYPlotLine implements XYDataset {
 
 
 	private int toAxisX(int x) {
-		// Assumption: plot line is contained in an XYPlotContents, which is contained in an XYPlot.  xAxis is contained in the XYPlot.
-		return x + getParent().getX() - xAxis.getX();
+		return (int) SwingUtilities.convertPoint(this, x, 0, xAxis).getX();
 	}
 
 
 	private int toAxisY(int y) {
-		// Assumption: plot line is contained in an XYPlotContents, which is contained in an XYPlot.  yAxis is contained in the XYPlot.
-		return y + getParent().getY() - yAxis.getY();
+		return (int) SwingUtilities.convertPoint(this, 0, y, yAxis).getY();
 	}
 
 
