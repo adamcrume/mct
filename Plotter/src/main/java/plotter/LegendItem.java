@@ -141,6 +141,7 @@ public class LegendItem extends JComponent {
 	 * @param description the description
 	 */
 	public void setDescription(String description) {
+		label.setText(description);
 		this.description = description;
 	}
 
